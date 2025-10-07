@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitt frontend</title>
+</head>
+<body>
+
+    <h1>Mitt frontend</h1>
+    <div id="data">
+
+    </div>
+
+    <script>
+
+        console.log(location.origin);
+
+/*         fetch("http://localhost:8080/persons/1")
+            .then(resp => {
+                return resp.json();
+            })
+            .then(data => {
+                let dataDiv = document.getElementById('data');
+                dataDiv.innerText = 'All good! ' + data.name;
+            })
+            .catch(exception => {
+                let dataDiv = document.getElementById('data');
+                dataDiv.innerText = 'Failure: ' + exception;
+            }); */
+
+
+        let person = {
+            id: 1,
+            name: "Martin",
+            phone: "+46707070707"
+        };
+
+        fetch("http://localhost:8080/person/1",
+            {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(person)
+            }
+        ).then(response => {
+            return response.json();
+        }).then(data => {
+            let dataDiv = document.getElementById('data');
+            dataDiv.innerText = 'All good! ' + data;
+        }).catch(exception => {
+            let dataDiv = document.getElementById('data');
+            dataDiv.innerText = 'Failure: ' + exception;
+        });
+
+    </script>
+    
+</body>
+</html>
