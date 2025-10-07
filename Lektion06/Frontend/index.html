@@ -16,7 +16,7 @@
 
         console.log(location.origin);
 
-/*         fetch("http://localhost:8080/persons/1")
+         fetch("http://localhost:8080/api/person/11")
             .then(resp => {
                 return resp.json();
             })
@@ -27,16 +27,16 @@
             .catch(exception => {
                 let dataDiv = document.getElementById('data');
                 dataDiv.innerText = 'Failure: ' + exception;
-            }); */
+            }); 
 
-
+/*
         let person = {
-            id: 1,
             name: "Martin",
-            phone: "+46707070707"
+            phone: "+46707070722",
+            email: "martin@mbh.se"
         };
 
-        fetch("http://localhost:8080/person/1",
+        fetch("http://localhost:8080/api/person",
             {
                 method: "POST",
                 headers: {
@@ -54,7 +54,7 @@
             let dataDiv = document.getElementById('data');
             dataDiv.innerText = 'Failure: ' + exception;
         });
-
+*/
     </script>
     
 </body>

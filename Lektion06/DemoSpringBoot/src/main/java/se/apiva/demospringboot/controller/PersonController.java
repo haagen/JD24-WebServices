@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +16,10 @@ import se.apiva.demospringboot.service.PersonService;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/person")
@@ -24,28 +30,52 @@ public class PersonController {
     private PersonService service;
 
     @GetMapping
-    public List<Person> list(
+    public CollectionModel<EntityModel<Person>> list(
             @RequestParam(required = false) String name
     ) {
+        List<Person> dbPersons;
 
         if (name != null && name.length() > 0) {
-            return service.listByName(name);
+            dbPersons = service.listByName(name);
+        } else {
+            dbPersons = service.listAll();
         }
 
-        return service.listAll();
+        List<EntityModel<Person>> persons = dbPersons.stream()
+                .map(person -> EntityModel.of(person,
+                            linkTo(methodOn(PersonController.class).get(person.getId())).withSelfRel()
+                        )
+                )
+                .collect(Collectors.toList());
+        return CollectionModel.of(
+                persons,
+                linkTo(methodOn(PersonController.class).list(name)).withSelfRel()
+        );
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Person> get(@Min(1) @PathVariable Integer id) {
+    public ResponseEntity<EntityModel<Person>> get(@Min(1) @PathVariable Integer id) {
         try {
             Person person = service.get(id);
-            return new ResponseEntity<Person>(person, HttpStatus.OK);
+
+            EntityModel<Person> resource = EntityModel.of(
+                    person,
+                    linkTo(methodOn(PersonController.class).get(person.getId())).withSelfRel(),
+                    linkTo(methodOn(PersonController.class).list(null)).withRel("persons")
+            );
+
+            return ResponseEntity.ok(resource);
         }  catch (Exception e) {
-            return new ResponseEntity<Person>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
+    @CrossOrigin(
+            origins = { "http://127.0.0.1:5500", "http://localhost:5500" },
+            methods = RequestMethod.POST
+    )
     public ResponseEntity<?> create(@Valid @RequestBody Person person) {
         try {
             service.save(person);
